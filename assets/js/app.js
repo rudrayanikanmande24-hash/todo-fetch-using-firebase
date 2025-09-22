@@ -170,7 +170,7 @@ const onUpdate = () =>{
 
 todoForm.addEventListener('submit', ontodo);
  todoUpdateBtn.addEventListener('click', onUpdate)
-=======
+
   const onRemove = ele =>{
     Swal.fire({
   title: "Are you sure?",
@@ -196,4 +196,4 @@ todoForm.addEventListener('submit', ontodo);
 
     
 }
->>>>>>> remove
+
