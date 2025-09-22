@@ -61,6 +61,9 @@ const makeApiCall = (methodName, apiUrl, msgBody) => {
     .finally(() => {
       spinner.classList.add('d-none');
     });
+
+
+    
 };
 
 // Initial Fetch
@@ -69,3 +72,35 @@ makeApiCall('GET', TODO_URL, null)
     let todoArr = objToArr(data);
     templating(todoArr);
   });
+
+  
+
+const onTodo = (eve) => {
+  eve.preventDefault();
+
+  let obj = {
+    todoItem: todoItem.value
+  };
+
+  cl("Creating Todo:", obj);
+
+  todoForm.reset();
+
+  makeApiCall('POST', TODO_URL, obj)
+    .then(res => {
+      if (!res) return;
+
+      let data = { ...obj, id: res.name };
+
+      let li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+      li.id = data.id;
+      li.innerHTML = <strong>${data.todoItem}</strong>;
+
+      todoContainer.prepend(li);
+
+      snackBar('Todo created successfully', 'success');
+    });
+};
+
+todoForm.addEventListener('submit', onTodo);
