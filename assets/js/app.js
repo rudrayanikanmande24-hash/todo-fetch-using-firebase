@@ -1,7 +1,13 @@
 const cl = console.log;
 
+
+const todoForm = document.getElementById('todoForm');
+const todoItem = document.getElementById('todoItem');
+const todoSubmitBtn = document.getElementById('todoSubmitBtn');
+const todoUpdateBtn = document.getElementById('todoUpdateBtn');
 const todoContainer = document.getElementById('todoContainer');
 const spinner = document.getElementById("spinner");
+
 
 const BASE_URL = 'https://fir-generic-posts-default-rtdb.asia-southeast1.firebasedatabase.app';
 const TODO_URL = `${BASE_URL}/todos.json`;
@@ -23,17 +29,26 @@ const objToArr = (obj) => {
   return todoArr;
 };
 
-const templating = (arr) => {
-  let result = '';
-  arr.forEach(ele => {
-    result += `
-      <li class="list-group-item d-flex justify-content-between align-items-center" id="${ele.id}">
-        <strong>${ele.todoItem}</strong>
-      </li>
-    `;
-  });
-  todoContainer.innerHTML = result;
-};
+const templating = arr =>{
+    let result=''
+
+    arr.forEach(ele => {
+        result += ` <li class="list-group-item d-flex justify-content-between align-items-center d-flex" id="${ele.id}">
+                    <strong>${ele.todoItem}</strong>
+                    <div>
+                       <i  onclick="onEdit(this)" class=" fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
+                       <i onclick="onRemove(this)" class="fa-solid fa-trash  fa-2x text-danger" role="button"></i>
+                    </div>
+                </li>
+        
+        
+        `
+    });
+    todoContainer.innerHTML=result;
+}
+
+
+
 
 const makeApiCall = (methodName, apiUrl, msgBody) => {
   msgBody = msgBody ? JSON.stringify(msgBody) : null;
@@ -66,7 +81,6 @@ const makeApiCall = (methodName, apiUrl, msgBody) => {
     
 };
 
-// Initial Fetch
 makeApiCall('GET', TODO_URL, null)
   .then(data => {
     let todoArr = objToArr(data);
@@ -75,32 +89,84 @@ makeApiCall('GET', TODO_URL, null)
 
   
 
-const onTodo = (eve) => {
-  eve.preventDefault();
+ const ontodo = (eve) =>{
+    eve.preventDefault()
 
-  let obj = {
-    todoItem: todoItem.value
-  };
 
-  cl("Creating Todo:", obj);
+    let obj = {
+        todoItem:todoItem.value
+    }
+    cl(obj)
 
-  todoForm.reset();
+    todoForm.reset()
 
-  makeApiCall('POST', TODO_URL, obj)
-    .then(res => {
-      if (!res) return;
+    spinner.classList.remove('d-none')
+    makeApiCall('POST',TODO_URL,obj)
+      .then(res=>{
+        let data = {...obj, id:res.name}
 
-      let data = { ...obj, id: res.name };
+        cl(res)
+        let li = document.createElement('li')
+        li.className='list-group-item d-flex justify-content-between align-items-center d-flex'
+        li.id=res.id
+        li.innerHTML=`<strong>${data.todoItem}</strong>
+                    <div>
+                       <i onclick="onEdit(this)" class= "fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
+                       <i onclick="onRemove(this)" class="fa-solid fa-trash  fa-2x text-danger" role="button"></i>
+                    </div>
+        
+        
+        `
+        todoContainer.prepend(li)
+      })
+      spinner.classList.add('d-none')
+      snackBar('Card create succesfully','success')
+ }
 
-      let li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-      li.id = data.id;
-      li.innerHTML = <strong>${data.todoItem}</strong>;
 
-      todoContainer.prepend(li);
+const onEdit = ele =>{
+    let EDIT_ID= ele.closest('li').id
+    localStorage.setItem('EDIT_ID',EDIT_ID)
+    let EDIT_URL=`${BASE_URL}/todos/${EDIT_ID}.json`
+   
+    spinner.classList.remove('d-none')
+    makeApiCall('GET',EDIT_URL,null)
+    .then(res=>{
+        cl(res)
+        todoItem.value=res.todoItem
 
-      snackBar('Todo created successfully', 'success');
-    });
-};
+        todoSubmitBtn.classList.add('d-none')
+        todoUpdateBtn.classList.remove('d-none')
+    })
+    spinner.classList.add('d-none')
+}
 
-todoForm.addEventListener('submit', onTodo);
+
+const onUpdate = () =>{
+    let UPDATE_ID=localStorage.getItem('EDIT_ID')
+    let UPDATE_URL=`${BASE_URL}/todos/${UPDATE_ID}.json`
+
+    let UPDATED_OBJ={
+        todoItem:todoItem.value
+    }
+     todoForm.reset()
+     spinner.classList.remove('d-none')
+    makeApiCall('PATCH',UPDATE_URL,UPDATED_OBJ)
+    .then(res=>{
+
+        let li = document.getElementById(UPDATE_ID)
+        let strong = document.querySelector('strong')
+        strong.innerHTML=UPDATED_OBJ.todoItem
+   
+
+        todoSubmitBtn.classList.remove('d-none')
+        todoUpdateBtn.classList.add('d-none')
+        spinner.classList.add('d-none')
+        snackBar('Udated Successfully', 'success')
+    })
+     
+}
+
+
+todoForm.addEventListener('submit', ontodo);
+ todoUpdateBtn.addEventListener('click', onUpdate)
