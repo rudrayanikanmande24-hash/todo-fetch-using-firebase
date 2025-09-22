@@ -170,3 +170,30 @@ const onUpdate = () =>{
 
 todoForm.addEventListener('submit', ontodo);
  todoUpdateBtn.addEventListener('click', onUpdate)
+=======
+  const onRemove = ele =>{
+    Swal.fire({
+  title: "Are you sure?",
+  text: "You won't be able to revert this!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, delete it!"
+}).then((result) => {
+  if (result.isConfirmed) {
+    let REMOVE_ID=ele.closest('li').id
+    let REMOVE_URL=`${BSAE_URL}/todos/${REMOVE_ID}.json`
+    spinner.classList.remove('d-none')
+    makeApiCall('DELETE',REMOVE_URL,null)
+    .then(res=>{
+
+        ele.closest('li').remove()
+        spinner.classList.add('d-none')
+    })
+  }
+});
+
+    
+}
+>>>>>>> remove
